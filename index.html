@@ -2,32 +2,21 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>CSS 音樂節奏遊戲</title>
+  <title>節奏音樂遊戲</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="favicon.png" type="image/png">
 </head>
 <body>
 
-<h1>🎵 音樂節奏遊戲</h1>
-<p>請依序點擊節拍鍵</p>
+<h1>🎵 節奏音樂遊戲</h1>
+<p>音符到線上時按「空白鍵」</p>
 
-<div class="game">
-
-  <input type="radio" name="beat" id="b1">
-  <label for="b1" class="beat beat1">♪</label>
-
-  <input type="radio" name="beat" id="b2">
-  <label for="b2" class="beat beat2">♫</label>
-
-  <input type="radio" name="beat" id="b3">
-  <label for="b3" class="beat beat3">♬</label>
-
-  <div class="result">
-    🎉 Perfect! 節奏完成！
-  </div>
-
+<div id="game">
+  <div id="judge-line"></div>
+  <div id="note"></div>
 </div>
 
+<p id="result"></p>
+
+<script src="script.js"></script>
 </body>
 </html>
-
