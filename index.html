@@ -1,22 +1,86 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <title>節奏音樂遊戲</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>我的首款節奏遊戲</title>
+    <style>
+        body { background: #222; color: white; display: flex; flex-direction: column; align-items: center; }
+        canvas { border: 2px solid #fff; background: #000; }
+        .info { margin-top: 10px; font-family: sans-serif; }
+    </style>
 </head>
 <body>
+    <h1>音樂節奏遊戲 1.0</h1>
+    <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <div class="info">按下 **空白鍵 (Space)** 打擊音符！</div>
 
-<h1>🎵 節奏音樂遊戲</h1>
-<p>音符到線上時按「空白鍵」</p>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-<div id="game">
-  <div id="judge-line"></div>
-  <div id="note"></div>
-</div>
+        // 遊戲參數
+        let score = 0;
+        let notes = []; // 存放畫面上所有的音符
+        const hitLineY = 500; // 判定線的位置
+        const noteSpeed = 5;  // 音符移動速度
 
-<p id="result"></p>
+        // 產生音符的計時器
+        setInterval(() => {
+            notes.push({ y: 0, hit: false });
+        }, 1000); // 每 1000 毫秒（1秒）產生一個音符
 
-<script src="script.js"></script>
-</body>
-</html>
+        function update() {
+            // 1. 清除畫面
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 2. 畫出判定線
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(0, hitLineY);
+            ctx.lineTo(canvas.width, hitLineY);
+            ctx.stroke();
+
+            // 3. 更新與繪製音符
+            ctx.fillStyle = "cyan";
+            for (let i = 0; i < notes.length; i++) {
+                let n = notes[i];
+                n.y += noteSpeed; // 讓音符往下掉
+
+                // 畫出音符方塊
+                ctx.fillRect(175, n.y, 50, 20);
+
+                // 如果掉出螢幕就移除
+                if (n.y > canvas.height) {
+                    notes.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // 4. 顯示分數
+            ctx.fillStyle = "white";
+            ctx.font = "24px Arial";
+            ctx.fillText("Score: " + score, 20, 40);
+
+            requestAnimationFrame(update); // 持續循環
+        }
+
+        // 監聽鍵盤事件
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                // 檢查最下方的音符是否靠近判定線
+                for (let i = 0; i < notes.length; i++) {
+                    let n = notes[i];
+                    // 簡單判定：距離判定線正負 30 像素內算擊中
+                    if (Math.abs(n.y - hitLineY) < 30 && !n.hit) {
+                        score += 100;
+                        n.hit = true; 
+                        notes.splice(i, 1); // 擊中後消失
+                        break;
+                    }
+                }
+            }
+        });
+
+        update(); // 啟動遊戲
+    </script>
