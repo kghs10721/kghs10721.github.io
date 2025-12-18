@@ -1,0 +1,49 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: white;
+  text-align: center;
+}
+
+.game {
+  position: relative;
+  width: 300px;
+  height: 400px;
+  margin: 40px auto;
+  border: 2px solid white;
+  overflow: hidden;
+}
+
+input {
+  display: none;
+}
+
+.beat {
+  position: absolute;
+  top: -50px;
+  font-size: 40px;
+  cursor: pointer;
+  animation: fall 3s linear infinite;
+}
+
+.beat1 { left: 50px; animation-delay: 0s; }
+.beat2 { left: 130px; animation-delay: 1s; }
+.beat3 { left: 210px; animation-delay: 2s; }
+
+@keyframes fall {
+  to { top: 400px; }
+}
+
+.result {
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  font-size: 24px;
+  color: #0f0;
+}
+
+/* 完成順序顯示結果 */
+#b1:checked ~ #b2:checked ~ #b3:checked ~ .result {
+  display: block;
+}
