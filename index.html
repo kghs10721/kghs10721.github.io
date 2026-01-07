@@ -19,30 +19,63 @@
             width: 100%;
             text-align: center;
         }
+        /* 地圖容器 */
         #map-wrapper {
             position: relative;
             display: inline-block;
             margin: 20px auto;
             border: 2px solid #333;
+            /* 確保容器大小與圖片一致 */
+            line-height: 0; 
         }
         #map-image {
             display: block;
             max-width: 100%;
             height: auto;
         }
-        /* 亮起的符號標記 */
-        .target-marker {
+        
+        /* 洋流覆蓋區域的通用樣式 */
+        .current-overlay {
             position: absolute;
-            width: 35px;
-            height: 35px;
-            border: 4px solid #e74c3c;
-            border-radius: 50%;
-            background-color: rgba(231, 76, 60, 0.3);
-            transform: translate(-50%, -50%);
-            display: none;
-            box-shadow: 0 0 15px #e74c3c;
-            z-index: 10;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            pointer-events: none; /* 讓滑鼠點擊穿透，避免擋住視線 */
         }
+        /* 被選中題目時的高亮樣式 */
+        .active-question {
+            background-color: rgba(231, 76, 60, 0.5) !important; /* 半透明紅色 */
+            border-color: #e74c3c !important;
+            box-shadow: 0 0 10px #e74c3c;
+        }
+
+        /* --- 定義20個區域的位置與大小 (百分比) --- */
+        /* 太平洋 */
+        #overlay-a { top: 50%; left: 35%; width: 30%; height: 8%; } /* 北赤道 */
+        #overlay-b { top: 35%; left: 28%; width: 10%; height: 18%; } /* 黑潮 */
+        #overlay-c { top: 35%; left: 38%; width: 20%; height: 8%; } /* 北太平洋 */
+        #overlay-d { top: 35%; left: 58%; width: 8%; height: 18%; } /* 加利福尼亞 */
+        #overlay-e { top: 20%; left: 50%; width: 10%; height: 12%; } /* 阿拉斯加 */
+        #overlay-f { top: 20%; left: 33%; width: 10%; height: 15%; } /* 親潮 */
+        #overlay-g { top: 58%; left: 35%; width: 30%; height: 5%; } /* 赤道逆 */
+        #overlay-h { top: 63%; left: 35%; width: 30%; height: 8%; } /* 南赤道 */
+        #overlay-i { top: 70%; left: 40%; width: 8%; height: 15%; } /* 東澳 */
+        #overlay-k { top: 65%; left: 68%; width: 8%; height: 20%; } /* 秘魯 */
+        
+        /* 印度洋/南冰洋 */
+        #overlay-l { top: 65%; left: 22%; width: 8%; height: 18%; } /* 西澳 */
+        #overlay-n { top: 75%; left: 5%; width: 10%; height: 15%; } /* 阿古拉斯 */
+        #overlay-j { top: 90%; left: 10%; width: 80%; height: 8%; } /* 西風漂流 */
+
+        /* 大西洋 */
+        #overlay-m { top: 40%; left: 73%; width: 10%; height: 10%; } /* 墨西哥灣 */
+        #overlay-o { top: 32%; left: 80%; width: 15%; height: 8%; } /* 北大西洋 */
+        #overlay-p { top: 40%; left: 85%; width: 8%; height: 18%; } /* 加那利 */
+        #overlay-q { top: 18%; left: 72%; width: 8%; height: 15%; } /* 拉布拉多 */
+        #overlay-r { top: 65%; left: 78%; width: 6%; height: 15%; } /* 巴西 */
+        #overlay-s { top: 80%; left: 73%; width: 6%; height: 12%; } /* 福克蘭 */
+        #overlay-t { top: 60%; left: 90%; width: 6%; height: 18%; } /* 本吉拉 */
+
+
         #options-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -66,6 +99,9 @@
             font-size: 24px;
             font-weight: bold;
             height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .correct-text { color: #27ae60; }
         .wrong-text { color: #e74c3c; }
@@ -76,56 +112,74 @@
 <body>
 
 <div id="game-container">
-    <h1>🌊 世界洋流挑戰 (字母順序版)</h1>
-    <p>請根據地圖上<strong>亮起的符號</strong>，選出正確的洋流名稱</p>
+    <h1>🌊 世界洋流挑戰 (區域對齊版)</h1>
+    <p>請觀察地圖上<strong>紅色高亮的區域</strong>，並選出對應的洋流名稱</p>
 
     <div id="map-wrapper">
         <img id="map-image" src="洋流圖.jpg" alt="世界洋流地圖">
-        <div id="marker" class="target-marker"></div>
+        <div id="overlay-a" class="current-overlay"></div>
+        <div id="overlay-b" class="current-overlay"></div>
+        <div id="overlay-c" class="current-overlay"></div>
+        <div id="overlay-d" class="current-overlay"></div>
+        <div id="overlay-e" class="current-overlay"></div>
+        <div id="overlay-f" class="current-overlay"></div>
+        <div id="overlay-g" class="current-overlay"></div>
+        <div id="overlay-h" class="current-overlay"></div>
+        <div id="overlay-i" class="current-overlay"></div>
+        <div id="overlay-j" class="current-overlay"></div>
+        <div id="overlay-k" class="current-overlay"></div>
+        <div id="overlay-l" class="current-overlay"></div>
+        <div id="overlay-m" class="current-overlay"></div>
+        <div id="overlay-n" class="current-overlay"></div>
+        <div id="overlay-o" class="current-overlay"></div>
+        <div id="overlay-p" class="current-overlay"></div>
+        <div id="overlay-q" class="current-overlay"></div>
+        <div id="overlay-r" class="current-overlay"></div>
+        <div id="overlay-s" class="current-overlay"></div>
+        <div id="overlay-t" class="current-overlay"></div>
     </div>
 
-    <div id="feedback-box">正在載入遊戲...</div>
+    <div id="feedback-box">準備開始...</div>
     <div id="options-grid"></div>
 
     <div id="result-screen" class="result-screen">
         <h2 id="final-score"></h2>
         <p id="comment-text" style="font-size: 24px;"></p>
-        <button onclick="location.reload()" style="background:#2ecc71; color:white; border:none; padding:15px 30px;">重新挑戰</button>
+        <button onclick="location.reload()" style="background:#2ecc71; color:white; border:none; padding:15px 30px; font-size: 18px; border-radius: 5px; cursor: pointer;">重新挑戰</button>
     </div>
 </div>
 
 <script>
-    // 按照 a-t 順序排列的資料
-    const quizList = [
-        { id: 'a', name: "北赤道洋流", x: 48, y: 53.5 },
-        { id: 'b', name: "黑潮", x: 33.2, y: 44.5 },
-        { id: 'c', name: "北太平洋暖流", x: 42.5, y: 38.5 },
-        { id: 'd', name: "加利福尼亞涼流", x: 63.8, y: 44.5 },
-        { id: 'e', name: "阿拉斯加暖流", x: 55.5, y: 25.5 },
-        { id: 'f', name: "親潮", x: 38.5, y: 28.5 },
-        { id: 'g', name: "赤道逆流", x: 50.5, y: 58.5 },
-        { id: 'h', name: "南赤道洋流", x: 48.5, y: 64.5 },
-        { id: 'i', name: "東澳暖流", x: 46.5, y: 77.5 },
-        { id: 'j', name: "西風漂流", x: 50.5, y: 92.5 }, // 最後一題
-        { id: 'k', name: "秘魯涼流", x: 74.2, y: 73.5 },
-        { id: 'l', name: "西澳涼流", x: 26.5, y: 74.5 },
-        { id: 'm', name: "墨西哥灣流", x: 78.5, y: 44.5 },
-        { id: 'n', name: "阿古拉斯暖流", x: 8.5, y: 83.5 },
-        { id: 'o', name: "北大西洋暖流", x: 86.8, y: 35.5 },
-        { id: 'p', name: "加那利涼流", x: 83.8, y: 48.5 },
-        { id: 'q', name: "拉布拉多寒流", x: 75.8, y: 23.5 },
-        { id: 'r', name: "巴西暖流", x: 82.5, y: 71.5 },
-        { id: 's', name: "福克蘭寒流", x: 75.5, y: 88.5 },
-        { id: 't', name: "本吉拉涼流", x: 91.5, y: 67.5 }
+    // 資料與正確答案
+    const quizData = [
+        { id: 'a', name: "北赤道洋流" },
+        { id: 'b', name: "黑潮" },
+        { id: 'c', name: "北太平洋暖流" },
+        { id: 'd', name: "加利福尼亞涼流" },
+        { id: 'e', name: "阿拉斯加暖流" },
+        { id: 'f', name: "親潮" },
+        { id: 'g', name: "赤道逆流" },
+        { id: 'h', name: "南赤道洋流" },
+        { id: 'i', name: "東澳暖流" },
+        { id: 'j', name: "西風漂流" },
+        { id: 'k', name: "秘魯涼流" },
+        { id: 'l', name: "西澳涼流" },
+        { id: 'm', name: "墨西哥灣流" },
+        { id: 'n', name: "阿古拉斯暖流" },
+        { id: 'o', name: "北大西洋暖流" },
+        { id: 'p', name: "加那利涼流" },
+        { id: 'q', name: "拉布拉多寒流" },
+        { id: 'r', name: "巴西暖流" },
+        { id: 's', name: "福克蘭寒流" },
+        { id: 't', name: "本吉拉涼流" }
     ];
 
-    // 重新排序成 a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t (字母順序)
-    quizList.sort((a, b) => a.id.localeCompare(b.id));
+    // 確保按字母順序排列
+    quizData.sort((a, b) => a.id.localeCompare(b.id));
 
     let currentIndex = 0;
     let score = 0;
 
-    const marker = document.getElementById('marker');
     const feedback = document.getElementById('feedback-box');
     const optionsGrid = document.getElementById('options-grid');
 
@@ -137,7 +191,7 @@
     function renderOptions() {
         optionsGrid.innerHTML = '';
         // 選項按名稱排序，方便找答案
-        const allNames = quizList.map(item => item.name).sort((a, b) => a.localeCompare(b, 'zh-TW'));
+        const allNames = quizData.map(item => item.name).sort((a, b) => a.localeCompare(b, 'zh-TW'));
         allNames.forEach(name => {
             const btn = document.createElement('button');
             btn.innerText = name;
@@ -147,42 +201,50 @@
     }
 
     function showQuestion() {
-        if (currentIndex >= quizList.length) {
+        // 移除所有舊的高亮
+        document.querySelectorAll('.current-overlay').forEach(el => el.classList.remove('active-question'));
+
+        if (currentIndex >= quizData.length) {
             showResult();
             return;
         }
         
-        const q = quizList[currentIndex];
-        marker.style.display = 'block';
-        marker.style.left = q.x + '%';
-        marker.style.top = q.y + '%';
-        marker.style.borderColor = '#e74c3c';
+        const q = quizData[currentIndex];
+        // 高亮當前題目的區域
+        const currentOverlay = document.getElementById(`overlay-${q.id}`);
+        if (currentOverlay) {
+            currentOverlay.classList.add('active-question');
+        }
         
-        feedback.innerHTML = `請配對符號 <span style="color:#e74c3c; font-size:30px;">${q.id}</span> 的名稱`;
+        feedback.innerHTML = `請回答地圖上紅色區域 (代號 ${q.id}) 的洋流名稱`;
         feedback.className = '';
         
         document.querySelectorAll('#options-grid button').forEach(b => b.disabled = false);
     }
 
     function checkAnswer(selectedName) {
-        const correct = quizList[currentIndex].name;
-        const currentId = quizList[currentIndex].id;
+        const correct = quizData[currentIndex].name;
+        const currentId = quizData[currentIndex].id;
         document.querySelectorAll('#options-grid button').forEach(b => b.disabled = true);
 
         if (selectedName === correct) {
             score++;
-            feedback.innerHTML = `✅ 答對了！符號 ${currentId} 是 ${correct}`;
+            feedback.innerHTML = `✅ 答對了！代號 ${currentId} 是 ${correct}`;
             feedback.className = "correct-text";
-            marker.style.borderColor = "#2ecc71";
-            marker.style.boxShadow = "0 0 15px #2ecc71";
+            // 答對時，讓區域變綠色一下
+            document.getElementById(`overlay-${currentId}`).style.backgroundColor = "rgba(46, 204, 113, 0.5)";
+            document.getElementById(`overlay-${currentId}`).style.borderColor = "#2ecc71";
         } else {
-            feedback.innerHTML = `❌ 答錯了！符號 ${currentId} 其實是 <span class="wrong-text">${correct}</span>`;
+            feedback.innerHTML = `❌ 答錯了！代號 ${currentId} 其實是 <span class="wrong-text">${correct}</span>`;
             feedback.className = "wrong-text";
-            marker.style.borderColor = "#e74c3c";
         }
 
         setTimeout(() => {
-            marker.style.boxShadow = "0 0 15px #e74c3c";
+            // 重置區域顏色樣式 (為了下一題)
+            const overlay = document.getElementById(`overlay-${currentId}`);
+            overlay.style.backgroundColor = "";
+            overlay.style.borderColor = "";
+            
             currentIndex++;
             showQuestion();
         }, 2000);
@@ -195,8 +257,8 @@
         const resultScreen = document.getElementById('result-screen');
         resultScreen.style.display = 'block';
 
-        const rate = Math.round((score / quizList.length) * 100);
-        document.getElementById('final-score').innerText = `你的答對率：${rate}%`;
+        const rate = Math.round((score / quizData.length) * 100);
+        document.getElementById('final-score').innerText = `你的答對率：${rate}% (${score}/${quizData.length})`;
 
         let comment = "";
         if (rate === 100) comment = "你超棒！你是洋流大師！🥇";
@@ -207,6 +269,7 @@
         document.getElementById('comment-text').innerText = comment;
     }
 
+    // 圖片載入完成後再開始遊戲，確保高度計算正確
     window.onload = initGame;
 </script>
 
