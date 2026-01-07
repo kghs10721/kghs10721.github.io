@@ -15,41 +15,63 @@
             padding: 20px;
         }
         #game-container {
-            max-width: 800px;
+            max-width: 900px;
             text-align: center;
         }
-        /* 簡易地圖區域 */
-        #map-area {
+        /* 地圖區域容器 */
+        #map-container {
             position: relative;
-            width: 600px;
-            height: 300px;
-            border: 2px solid #eee;
+            width: 100%;
+            max-width: 850px;
             margin: 20px auto;
-            background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_blank_without_borders.svg');
-            background-size: cover;
-            background-position: center;
         }
-        /* 洋流路徑箭頭 (範例) */
-        .current-path {
+        /* 世界洋流地圖圖片 */
+        #map-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        /* 洋流點擊區域的共同樣式 */
+        .current-area {
             position: absolute;
-            stroke-width: 5;
-            fill: none;
-            transition: stroke 0.3s;
             cursor: pointer;
+            border: 3px solid transparent; /* 預設邊框透明 */
+            transition: border-color 0.3s;
         }
-        .highlight { stroke: orange; stroke-width: 8; }
-        .correct { stroke: #2ecc71; }
-        .wrong { stroke: #e74c3c; }
+        /* 高亮樣式 */
+        .highlight { border-color: orange; background-color: rgba(255, 165, 0, 0.3); }
+        .correct { border-color: #2ecc71; background-color: rgba(46, 204, 113, 0.3); }
+        .wrong { border-color: #e74c3c; background-color: rgba(231, 76, 60, 0.3); }
+
+        /* 定義每個洋流區域的位置和大小 */
+        #current-0 { top: 25%; left: 62%; width: 8%; height: 8%; } /* 北赤道洋流(太平洋) */
+        #current-1 { top: 20%; left: 68%; width: 6%; height: 15%; } /* 黑潮 */
+        #current-2 { top: 10%; left: 68%; width: 6%; height: 10%; } /* 親潮 */
+        #current-3 { top: 15%; left: 75%; width: 10%; height: 8%; } /* 北太平洋暖流 */
+        #current-4 { top: 10%; left: 85%; width: 5%; height: 10%; } /* 阿拉斯加暖流 */
+        #current-5 { top: 20%; left: 90%; width: 5%; height: 15%; } /* 加利福尼亞涼流 */
+        #current-6 { top: 45%; left: 65%; width: 15%; height: 8%; } /* 南赤道洋流(太平洋) */
+        #current-7 { top: 55%; left: 80%; width: 5%; height: 15%; } /* 東澳暖流 */
+        #current-8 { top: 55%; left: 90%; width: 5%; height: 20%; } /* 秘魯涼流 */
+        #current-9 { top: 75%; left: 10%; width: 80%; height: 10%; } /* 西風漂流 */
+        #current-10 { top: 25%; left: 25%; width: 8%; height: 12%; } /* 墨西哥灣流 */
+        #current-11 { top: 15%; left: 30%; width: 10%; height: 8%; } /* 北大西洋暖流 */
+        #current-12 { top: 25%; left: 40%; width: 5%; height: 15%; } /* 加那利涼流 */
+        #current-13 { top: 55%; left: 30%; width: 5%; height: 15%; } /* 巴西暖流 */
+        #current-14 { top: 55%; left: 40%; width: 5%; height: 15%; } /* 本格拉涼流 */
+        #current-15 { top: 45%; left: 45%; width: 5%; height: 15%; } /* 阿古拉斯暖流 */
+        #current-16 { top: 55%; left: 60%; width: 5%; height: 15%; } /* 西澳涼流 */
+        #current-17 { top: 10%; left: 25%; width: 5%; height: 10%; } /* 拉布拉多寒流 */
 
         #options {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             margin-top: 20px;
         }
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 10px;
+            font-size: 14px;
             cursor: pointer;
             background: white;
             border: 2px solid #3498db;
@@ -70,12 +92,29 @@
 <body>
 
 <div id="game-container">
-    <h1>🌊 洋流填空遊戲</h1>
-    <p>請觀察地圖上的標記，並點選正確的洋流名稱</p>
+    <h1>🌊 世界洋流填空遊戲</h1>
+    <p>請觀察地圖上的標記區域，並點選正確的洋流名稱</p>
 
-    <div id="map-area">
-        <svg width="600" height="300">
-            <path id="current-0" class="current-path" d="M 480 150 Q 520 100 530 50" stroke="#bdc3c7" marker-end="url(#arrow)" /> <path id="current-1" class="current-path" d="M 100 120 Q 50 150 100 200" stroke="#bdc3c7" /> <path id="current-2" class="current-path" d="M 150 50 Q 250 50 350 70" stroke="#bdc3c7" /> <path id="current-3" class="current-path" d="M 380 250 L 500 250" stroke="#bdc3c7" /> </svg>
+    <div id="map-container">
+        <img id="map-image" src="image_0.png" alt="世界洋流地圖">
+        <div id="current-0" class="current-area"></div>
+        <div id="current-1" class="current-area"></div>
+        <div id="current-2" class="current-area"></div>
+        <div id="current-3" class="current-area"></div>
+        <div id="current-4" class="current-area"></div>
+        <div id="current-5" class="current-area"></div>
+        <div id="current-6" class="current-area"></div>
+        <div id="current-7" class="current-area"></div>
+        <div id="current-8" class="current-area"></div>
+        <div id="current-9" class="current-area"></div>
+        <div id="current-10" class="current-area"></div>
+        <div id="current-11" class="current-area"></div>
+        <div id="current-12" class="current-area"></div>
+        <div id="current-13" class="current-area"></div>
+        <div id="current-14" class="current-area"></div>
+        <div id="current-15" class="current-area"></div>
+        <div id="current-16" class="current-area"></div>
+        <div id="current-17" class="current-area"></div>
     </div>
 
     <div id="feedback"></div>
@@ -89,41 +128,65 @@
 </div>
 
 <script>
+    // 根據新地圖擴充的洋流資料
     const data = [
-        { id: 0, name: "黑潮", info: "位於台灣東部，是強大的暖流" },
-        { id: 1, name: "秘魯洋流", info: "南美洲西岸的湧升寒流" },
-        { id: 2, name: "北大西洋暖流", info: "調節歐洲氣候的重要洋流" },
-        { id: 3, name: "西風漂流", info: "環繞南極洲的強大洋流" }
+        { id: 0, name: "北赤道洋流(太平洋)" },
+        { id: 1, name: "黑潮" },
+        { id: 2, name: "親潮" },
+        { id: 3, name: "北太平洋暖流" },
+        { id: 4, name: "阿拉斯加暖流" },
+        { id: 5, name: "加利福尼亞涼流" },
+        { id: 6, name: "南赤道洋流(太平洋)" },
+        { id: 7, name: "東澳暖流" },
+        { id: 8, name: "秘魯涼流" },
+        { id: 9, name: "西風漂流" },
+        { id: 10, name: "墨西哥灣流" },
+        { id: 11, name: "北大西洋暖流" },
+        { id: 12, name: "加那利涼流" },
+        { id: 13, name: "巴西暖流" },
+        { id: 14, name: "本格拉涼流" },
+        { id: 15, name: "阿古拉斯暖流" },
+        { id: 16, name: "西澳涼流" },
+        { id: 17, name: "拉布拉多寒流" }
     ];
 
     let currentIndex = 0;
     let correctCount = 0;
+    let shuffledData = [];
 
     const feedbackEl = document.getElementById('feedback');
     const optionsEl = document.getElementById('options');
     const resultScreen = document.getElementById('result-screen');
+    const mapContainer = document.getElementById('map-container');
 
     function initGame() {
+        // 將題目隨機排序
+        shuffledData = [...data].sort(() => Math.random() - 0.5);
         showQuestion();
     }
 
     function showQuestion() {
-        if (currentIndex >= data.length) {
+        if (currentIndex >= shuffledData.length) {
             showResult();
             return;
         }
 
-        feedbackEl.innerText = `第 ${currentIndex + 1} 題 / 共 ${data.length} 題`;
+        feedbackEl.innerText = `第 ${currentIndex + 1} 題 / 共 ${shuffledData.length} 題`;
         feedbackEl.style.color = "black";
         
-        // 高亮當前洋流
-        document.querySelectorAll('.current-path').forEach(p => p.classList.remove('highlight'));
-        document.getElementById(`current-${currentIndex}`).classList.add('highlight');
+        // 移除所有高亮
+        document.querySelectorAll('.current-area').forEach(p => {
+            p.classList.remove('highlight', 'correct', 'wrong');
+        });
+        
+        // 高亮當前題目對應的洋流區域
+        const currentItem = shuffledData[currentIndex];
+        document.getElementById(`current-${currentItem.id}`).classList.add('highlight');
 
-        // 產生選項 (洗牌)
+        // 產生選項 (這裡不洗牌，按名稱排序方便尋找)
         optionsEl.innerHTML = '';
-        const shuffled = [...data].sort(() => Math.random() - 0.5);
-        shuffled.forEach(item => {
+        const sortedOptions = [...data].sort((a, b) => a.name.localeCompare(b.name, 'zh-Hant'));
+        sortedOptions.forEach(item => {
             const btn = document.createElement('button');
             btn.innerText = item.name;
             btn.onclick = () => checkAnswer(item.name);
@@ -132,18 +195,21 @@
     }
 
     function checkAnswer(selectedName) {
-        const correctAnswer = data[currentIndex].name;
-        const currentPath = document.getElementById(`current-${currentIndex}`);
+        const currentItem = shuffledData[currentIndex];
+        const correctAnswer = currentItem.name;
+        const currentArea = document.getElementById(`current-${currentItem.id}`);
+
+        currentArea.classList.remove('highlight');
 
         if (selectedName === correctAnswer) {
             correctCount++;
             feedbackEl.innerText = "✅ 答對了！";
             feedbackEl.style.color = "#2ecc71";
-            currentPath.setAttribute('stroke', '#2ecc71');
+            currentArea.classList.add('correct');
         } else {
             feedbackEl.innerText = `❌ 答錯了！正確答案是：${correctAnswer}`;
             feedbackEl.style.color = "#e74c3c";
-            currentPath.setAttribute('stroke', '#e74c3c');
+            currentArea.classList.add('wrong');
         }
 
         // 鎖定按鈕防止重複點擊
@@ -152,28 +218,29 @@
         setTimeout(() => {
             currentIndex++;
             showQuestion();
-        }, 2000);
+        }, 1500);
     }
 
     function showResult() {
-        document.getElementById('map-area').style.display = 'none';
+        mapContainer.style.display = 'none';
         optionsEl.style.display = 'none';
         feedbackEl.style.display = 'none';
         resultScreen.style.display = 'block';
 
-        const rate = Math.round((correctCount / data.length) * 100);
+        const rate = Math.round((correctCount / shuffledData.length) * 100);
         document.getElementById('final-score').innerText = `你的答對率：${rate}%`;
         
         let comment = "";
-        if (rate === 100) comment = "你超棒！你是洋流大師！🥇";
+        if (rate === 100) comment = "你超棒！你是世界洋流大師！🥇";
         else if (rate >= 80) comment = "很厲害喔，快要全對了！🌟";
-        else if (rate >= 50) comment = "表現不錯，再複習一下會更好！👍";
-        else comment = "還要加油喔，多認識一下地球的脈動！💪";
+        else if (rate >= 60) comment = "表現不錯，對全球洋流有一定了解！👍";
+        else comment = "還要加油喔，多看地圖認識地球的脈動！💪";
         
         document.getElementById('comment').innerText = comment;
     }
 
-    initGame();
+    // 確保圖片載入後再初始化遊戲，以確保點擊區域位置正確
+    window.onload = initGame;
 </script>
 
 </body>
