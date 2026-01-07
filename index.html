@@ -2,85 +2,179 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>音樂節奏遊戲</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>洋流填空遊戲</title>
     <style>
-        body { background: #222; color: white; display: flex; flex-direction: column; align-items: center; }
-        canvas { border: 2px solid #fff; background: #000; }
-        .info { margin-top: 10px; font-family: sans-serif; }
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        #game-container {
+            max-width: 800px;
+            text-align: center;
+        }
+        /* 簡易地圖區域 */
+        #map-area {
+            position: relative;
+            width: 600px;
+            height: 300px;
+            border: 2px solid #eee;
+            margin: 20px auto;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_blank_without_borders.svg');
+            background-size: cover;
+            background-position: center;
+        }
+        /* 洋流路徑箭頭 (範例) */
+        .current-path {
+            position: absolute;
+            stroke-width: 5;
+            fill: none;
+            transition: stroke 0.3s;
+            cursor: pointer;
+        }
+        .highlight { stroke: orange; stroke-width: 8; }
+        .correct { stroke: #2ecc71; }
+        .wrong { stroke: #e74c3c; }
+
+        #options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background: white;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        button:hover { background: #3498db; color: white; }
+        
+        #feedback {
+            margin: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            height: 30px;
+        }
+        .result-screen { display: none; }
     </style>
 </head>
 <body>
-    <h1>音樂節奏遊戲 1.0</h1>
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
-    <div class="info">按下 **空白鍵 (Space)** 打擊音符！</div>
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+<div id="game-container">
+    <h1>🌊 洋流填空遊戲</h1>
+    <p>請觀察地圖上的標記，並點選正確的洋流名稱</p>
 
-        // 遊戲參數
-        let score = 0;
-        let notes = []; // 存放畫面上所有的音符
-        const hitLineY = 500; // 判定線的位置
-        const noteSpeed = 5;  // 音符移動速度
+    <div id="map-area">
+        <svg width="600" height="300">
+            <path id="current-0" class="current-path" d="M 480 150 Q 520 100 530 50" stroke="#bdc3c7" marker-end="url(#arrow)" /> <path id="current-1" class="current-path" d="M 100 120 Q 50 150 100 200" stroke="#bdc3c7" /> <path id="current-2" class="current-path" d="M 150 50 Q 250 50 350 70" stroke="#bdc3c7" /> <path id="current-3" class="current-path" d="M 380 250 L 500 250" stroke="#bdc3c7" /> </svg>
+    </div>
 
-        // 產生音符的計時器
-        setInterval(() => {
-            notes.push({ y: 0, hit: false });
-        }, 1000); // 每 1000 毫秒（1秒）產生一個音符
+    <div id="feedback"></div>
+    <div id="options"></div>
 
-        function update() {
-            // 1. 清除畫面
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+    <div id="result-screen" class="result-screen">
+        <h2 id="final-score"></h2>
+        <p id="comment"></p>
+        <button onclick="location.reload()">再玩一次</button>
+    </div>
+</div>
 
-            // 2. 畫出判定線
-            ctx.strokeStyle = "red";
-            ctx.lineWidth = 5;
-            ctx.beginPath();
-            ctx.moveTo(0, hitLineY);
-            ctx.lineTo(canvas.width, hitLineY);
-            ctx.stroke();
+<script>
+    const data = [
+        { id: 0, name: "黑潮", info: "位於台灣東部，是強大的暖流" },
+        { id: 1, name: "秘魯洋流", info: "南美洲西岸的湧升寒流" },
+        { id: 2, name: "北大西洋暖流", info: "調節歐洲氣候的重要洋流" },
+        { id: 3, name: "西風漂流", info: "環繞南極洲的強大洋流" }
+    ];
 
-            // 3. 更新與繪製音符
-            ctx.fillStyle = "cyan";
-            for (let i = 0; i < notes.length; i++) {
-                let n = notes[i];
-                n.y += noteSpeed; // 讓音符往下掉
+    let currentIndex = 0;
+    let correctCount = 0;
 
-                // 畫出音符方塊
-                ctx.fillRect(175, n.y, 50, 20);
+    const feedbackEl = document.getElementById('feedback');
+    const optionsEl = document.getElementById('options');
+    const resultScreen = document.getElementById('result-screen');
 
-                // 如果掉出螢幕就移除
-                if (n.y > canvas.height) {
-                    notes.splice(i, 1);
-                    i--;
-                }
-            }
+    function initGame() {
+        showQuestion();
+    }
 
-            // 4. 顯示分數
-            ctx.fillStyle = "white";
-            ctx.font = "24px Arial";
-            ctx.fillText("Score: " + score, 20, 40);
-
-            requestAnimationFrame(update); // 持續循環
+    function showQuestion() {
+        if (currentIndex >= data.length) {
+            showResult();
+            return;
         }
 
-        // 監聽鍵盤事件
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                // 檢查最下方的音符是否靠近判定線
-                for (let i = 0; i < notes.length; i++) {
-                    let n = notes[i];
-                    // 簡單判定：距離判定線正負 30 像素內算擊中
-                    if (Math.abs(n.y - hitLineY) < 30 && !n.hit) {
-                        score += 100;
-                        n.hit = true; 
-                        notes.splice(i, 1); // 擊中後消失
-                        break;
-                    }
-                }
-            }
-        });
+        feedbackEl.innerText = `第 ${currentIndex + 1} 題 / 共 ${data.length} 題`;
+        feedbackEl.style.color = "black";
+        
+        // 高亮當前洋流
+        document.querySelectorAll('.current-path').forEach(p => p.classList.remove('highlight'));
+        document.getElementById(`current-${currentIndex}`).classList.add('highlight');
 
-        update(); // 啟動遊戲
-    </script>
+        // 產生選項 (洗牌)
+        optionsEl.innerHTML = '';
+        const shuffled = [...data].sort(() => Math.random() - 0.5);
+        shuffled.forEach(item => {
+            const btn = document.createElement('button');
+            btn.innerText = item.name;
+            btn.onclick = () => checkAnswer(item.name);
+            optionsEl.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedName) {
+        const correctAnswer = data[currentIndex].name;
+        const currentPath = document.getElementById(`current-${currentIndex}`);
+
+        if (selectedName === correctAnswer) {
+            correctCount++;
+            feedbackEl.innerText = "✅ 答對了！";
+            feedbackEl.style.color = "#2ecc71";
+            currentPath.setAttribute('stroke', '#2ecc71');
+        } else {
+            feedbackEl.innerText = `❌ 答錯了！正確答案是：${correctAnswer}`;
+            feedbackEl.style.color = "#e74c3c";
+            currentPath.setAttribute('stroke', '#e74c3c');
+        }
+
+        // 鎖定按鈕防止重複點擊
+        document.querySelectorAll('#options button').forEach(b => b.disabled = true);
+
+        setTimeout(() => {
+            currentIndex++;
+            showQuestion();
+        }, 2000);
+    }
+
+    function showResult() {
+        document.getElementById('map-area').style.display = 'none';
+        optionsEl.style.display = 'none';
+        feedbackEl.style.display = 'none';
+        resultScreen.style.display = 'block';
+
+        const rate = Math.round((correctCount / data.length) * 100);
+        document.getElementById('final-score').innerText = `你的答對率：${rate}%`;
+        
+        let comment = "";
+        if (rate === 100) comment = "你超棒！你是洋流大師！🥇";
+        else if (rate >= 80) comment = "很厲害喔，快要全對了！🌟";
+        else if (rate >= 50) comment = "表現不錯，再複習一下會更好！👍";
+        else comment = "還要加油喔，多認識一下地球的脈動！💪";
+        
+        document.getElementById('comment').innerText = comment;
+    }
+
+    initGame();
+</script>
+
+</body>
+</html>
