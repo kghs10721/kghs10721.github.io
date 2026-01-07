@@ -3,158 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>世界洋流填空挑戰</title>
+    <title>世界洋流填空挑戰 - 順序版</title>
     <style>
         body {
-            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            font-family: "Microsoft JhengHei", sans-serif;
             background-color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
             margin: 0;
             padding: 20px;
-            color: #333;
         }
         #game-container {
             max-width: 1000px;
             width: 100%;
             text-align: center;
         }
-        /* 地圖區域 */
         #map-wrapper {
             position: relative;
             display: inline-block;
             margin: 20px auto;
-            border: 1px solid #ddd;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 2px solid #333;
         }
         #map-image {
             display: block;
             max-width: 100%;
             height: auto;
         }
-        /* 問項標記圈圈 */
+        /* 亮起的符號標記 */
         .target-marker {
             position: absolute;
-            width: 30px;
-            height: 30px;
-            border: 3px solid #e74c3c;
+            width: 35px;
+            height: 35px;
+            border: 4px solid #e74c3c;
             border-radius: 50%;
-            background-color: rgba(231, 76, 60, 0.2);
+            background-color: rgba(231, 76, 60, 0.3);
             transform: translate(-50%, -50%);
             display: none;
-            animation: pulse 1.5s infinite;
+            box-shadow: 0 0 15px #e74c3c;
+            z-index: 10;
         }
-        @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.7; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }
-
-        /* 選項按鈕區 */
         #options-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 10px;
             margin-top: 20px;
-            width: 100%;
         }
         button {
-            padding: 12px 8px;
-            font-size: 15px;
+            padding: 12px;
+            font-size: 16px;
             background: white;
             border: 2px solid #3498db;
             border-radius: 6px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: 0.2s;
         }
         button:hover:not(:disabled) { background: #3498db; color: white; }
-        button:disabled { border-color: #ccc; color: #999; cursor: not-allowed; }
+        button:disabled { border-color: #ccc; color: #999; }
 
         #feedback-box {
             margin: 20px 0;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: bold;
-            min-height: 32px;
+            height: 40px;
         }
         .correct-text { color: #27ae60; }
         .wrong-text { color: #e74c3c; }
-
+        
         .result-screen { display: none; padding: 40px; }
-        .result-screen h2 { font-size: 36px; }
-        .reset-btn { background: #2ecc71; color: white; border: none; padding: 15px 30px; font-size: 18px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <h1>🌊 世界洋流填空挑戰</h1>
-    <p>請根據地圖上標示的紅色圈圈，點選下方正確的洋流名稱</p>
+    <h1>🌊 世界洋流挑戰 (字母順序版)</h1>
+    <p>請根據地圖上<strong>亮起的符號</strong>，選出正確的洋流名稱</p>
 
     <div id="map-wrapper">
         <img id="map-image" src="洋流圖.jpg" alt="世界洋流地圖">
         <div id="marker" class="target-marker"></div>
     </div>
 
-    <div id="feedback-box"></div>
+    <div id="feedback-box">正在載入遊戲...</div>
     <div id="options-grid"></div>
 
     <div id="result-screen" class="result-screen">
         <h2 id="final-score"></h2>
         <p id="comment-text" style="font-size: 24px;"></p>
-        <button class="reset-btn" onclick="location.reload()">重新挑戰</button>
+        <button onclick="location.reload()" style="background:#2ecc71; color:white; border:none; padding:15px 30px;">重新挑戰</button>
     </div>
 </div>
 
 <script>
-    // 定義座標與資料 (百分比定位：left, top)
-    const currentData = [
-        { id: 'a', name: "北赤道洋流", x: 48, y: 53 },
-        { id: 'b', name: "黑潮", x: 33, y: 44 },
-        { id: 'c', name: "北太平洋暖流", x: 42, y: 38 },
-        { id: 'd', name: "加利福尼亞涼流", x: 63, y: 44 },
-        { id: 'e', name: "阿拉斯加暖流", x: 55, y: 25 },
-        { id: 'f', name: "親潮", x: 38, y: 28 },
-        { id: 'g', name: "赤道逆流", x: 50, y: 58 },
-        { id: 'h', name: "南赤道洋流", x: 48, y: 64 },
-        { id: 'i', name: "東澳暖流", x: 46, y: 77 },
-        { id: 'j', name: "西風漂流", x: 50, y: 92 },
-        { id: 'k', name: "秘魯涼流", x: 74, y: 73 },
-        { id: 'l', x: 26, y: 75, name: "西澳涼流" },
-        { id: 'm', x: 78, y: 44, name: "墨西哥灣流" },
-        { id: 'n', x: 8, y: 84, name: "阿古拉斯暖流" },
-        { id: 'o', x: 86, y: 35, name: "北大西洋暖流" },
-        { id: 'p', x: 83, y: 48, name: "加那利涼流" },
-        { id: 'q', x: 75, y: 24, name: "拉布拉多寒流" },
-        { id: 'r', x: 82, y: 72, name: "巴西暖流" },
-        { id: 's', x: 75, y: 88, name: "福克蘭寒流" },
-        { id: 't', x: 91, y: 68, name: "本吉拉涼流" }
+    // 按照 a-t 順序排列的資料
+    const quizList = [
+        { id: 'a', name: "北赤道洋流", x: 48, y: 53.5 },
+        { id: 'b', name: "黑潮", x: 33.2, y: 44.5 },
+        { id: 'c', name: "北太平洋暖流", x: 42.5, y: 38.5 },
+        { id: 'd', name: "加利福尼亞涼流", x: 63.8, y: 44.5 },
+        { id: 'e', name: "阿拉斯加暖流", x: 55.5, y: 25.5 },
+        { id: 'f', name: "親潮", x: 38.5, y: 28.5 },
+        { id: 'g', name: "赤道逆流", x: 50.5, y: 58.5 },
+        { id: 'h', name: "南赤道洋流", x: 48.5, y: 64.5 },
+        { id: 'i', name: "東澳暖流", x: 46.5, y: 77.5 },
+        { id: 'j', name: "西風漂流", x: 50.5, y: 92.5 }, // 最後一題
+        { id: 'k', name: "秘魯涼流", x: 74.2, y: 73.5 },
+        { id: 'l', name: "西澳涼流", x: 26.5, y: 74.5 },
+        { id: 'm', name: "墨西哥灣流", x: 78.5, y: 44.5 },
+        { id: 'n', name: "阿古拉斯暖流", x: 8.5, y: 83.5 },
+        { id: 'o', name: "北大西洋暖流", x: 86.8, y: 35.5 },
+        { id: 'p', name: "加那利涼流", x: 83.8, y: 48.5 },
+        { id: 'q', name: "拉布拉多寒流", x: 75.8, y: 23.5 },
+        { id: 'r', name: "巴西暖流", x: 82.5, y: 71.5 },
+        { id: 's', name: "福克蘭寒流", x: 75.5, y: 88.5 },
+        { id: 't', name: "本吉拉涼流", x: 91.5, y: 67.5 }
     ];
 
-    let quizList = [];
+    // 重新排序成 a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t (字母順序)
+    quizList.sort((a, b) => a.id.localeCompare(b.id));
+
     let currentIndex = 0;
     let score = 0;
 
     const marker = document.getElementById('marker');
     const feedback = document.getElementById('feedback-box');
     const optionsGrid = document.getElementById('options-grid');
-    const resultScreen = document.getElementById('result-screen');
 
     function initGame() {
-        // 洗牌題目
-        quizList = [...currentData].sort(() => Math.random() - 0.5);
         renderOptions();
         showQuestion();
     }
 
     function renderOptions() {
         optionsGrid.innerHTML = '';
-        // 按名稱排序選項方便尋找
-        const sortedNames = [...currentData].sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'));
-        sortedNames.forEach(item => {
+        // 選項按名稱排序，方便找答案
+        const allNames = quizList.map(item => item.name).sort((a, b) => a.localeCompare(b, 'zh-TW'));
+        allNames.forEach(name => {
             const btn = document.createElement('button');
-            btn.innerText = item.name;
-            btn.onclick = () => checkAnswer(item.name);
+            btn.innerText = name;
+            btn.onclick = () => checkAnswer(name);
             optionsGrid.appendChild(btn);
         });
     }
@@ -169,60 +156,57 @@
         marker.style.display = 'block';
         marker.style.left = q.x + '%';
         marker.style.top = q.y + '%';
-        marker.style.borderColor = '#e74c3c'; // 重置為紅色
+        marker.style.borderColor = '#e74c3c';
         
-        feedback.innerHTML = `第 ${currentIndex + 1} / ${quizList.length} 題：地圖上的圈圈是哪一個洋流？`;
+        feedback.innerHTML = `請配對符號 <span style="color:#e74c3c; font-size:30px;">${q.id}</span> 的名稱`;
         feedback.className = '';
         
-        // 啟用所有按鈕
         document.querySelectorAll('#options-grid button').forEach(b => b.disabled = false);
     }
 
     function checkAnswer(selectedName) {
         const correct = quizList[currentIndex].name;
-        const btns = document.querySelectorAll('#options-grid button');
-        btns.forEach(b => b.disabled = true); // 鎖定按鈕
+        const currentId = quizList[currentIndex].id;
+        document.querySelectorAll('#options-grid button').forEach(b => b.disabled = true);
 
         if (selectedName === correct) {
             score++;
-            feedback.innerHTML = "✅ 太棒了！答對了！";
+            feedback.innerHTML = `✅ 答對了！符號 ${currentId} 是 ${correct}`;
             feedback.className = "correct-text";
             marker.style.borderColor = "#2ecc71";
+            marker.style.boxShadow = "0 0 15px #2ecc71";
         } else {
-            feedback.innerHTML = `❌ 答錯了！這是「<span class="wrong-text">${correct}</span>」`;
+            feedback.innerHTML = `❌ 答錯了！符號 ${currentId} 其實是 <span class="wrong-text">${correct}</span>`;
             feedback.className = "wrong-text";
             marker.style.borderColor = "#e74c3c";
         }
 
         setTimeout(() => {
+            marker.style.boxShadow = "0 0 15px #e74c3c";
             currentIndex++;
             showQuestion();
-        }, 1800);
+        }, 2000);
     }
 
     function showResult() {
         document.getElementById('map-wrapper').style.display = 'none';
         optionsGrid.style.display = 'none';
         feedback.style.display = 'none';
+        const resultScreen = document.getElementById('result-screen');
         resultScreen.style.display = 'block';
 
-        const accuracy = Math.round((score / quizList.length) * 100);
-        document.getElementById('final-score').innerText = `你的答對率：${accuracy}%`;
+        const rate = Math.round((score / quizList.length) * 100);
+        document.getElementById('final-score').innerText = `你的答對率：${rate}%`;
 
         let comment = "";
-        if (accuracy === 100) {
-            comment = "你超棒！你是世界洋流大師！🥇";
-        } else if (accuracy >= 80) {
-            comment = "非常厲害，細節再注意一下就完美了！🌟";
-        } else if (accuracy >= 50) {
-            comment = "及格了，但還有進步空間喔！👍";
-        } else {
-            comment = "還要加油！多看幾次地圖會更有印象。💪";
-        }
+        if (rate === 100) comment = "你超棒！你是洋流大師！🥇";
+        else if (rate >= 80) comment = "很厲害喔，快要全對了！🌟";
+        else if (rate >= 50) comment = "表現不錯，再複習一下會更好！👍";
+        else comment = "還要加油喔，多看地圖認識地球的脈動！💪";
+        
         document.getElementById('comment-text').innerText = comment;
     }
 
-    // 等待圖片載入後開始，確保座標對齊
     window.onload = initGame;
 </script>
 
